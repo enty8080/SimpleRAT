@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 
 #define BUFFER_SIZE 1024
 
@@ -24,6 +25,10 @@ void send_byte(int byte) {
     fflush(0);
 }
 
+
+void terminate() {
+    exit(0);
+}
 
 void ls() {
     struct dirent *de;
@@ -62,7 +67,7 @@ void download() {
     }
     uint64_t size = file_size(filename);
     write(1, &size, 8);
-    if (sendfile(1, fileno(file), 0, size) < 0) perror("sendfile");
+    sendfile(1, fileno(file), 0, size);
     fflush(0);
     fclose(file);
 }
@@ -102,5 +107,21 @@ void sh() {
     read(0, &command, command_length);
     command[command_length] = 0;
     system(command);
+    send_byte(0x4); // end of transmission
+}
+
+void execute() {
+    uint64_t elf_size;
+    read(0, &elf_size, 8);
+    void* buffer = malloc(elf_size);
+    read(0, buffer, elf_size);
+
+    int fd = memfd_create("", 0);
+    write(fd, buffer, elf_size);
+    free(buffer);
+
+    char fd_path[20];
+    sprintf(&fd_path, "/proc/self/fd/%d", fd);
+    system(fd_path);
     send_byte(0x4); // end of transmission
 }

