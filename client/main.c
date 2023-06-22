@@ -52,7 +52,6 @@ int try_connect() {
         perror("setsockopt(TCP_NODELAY)");
         exit(1);
     }
-    printf("Connected\n");
     return s;
 }
 
